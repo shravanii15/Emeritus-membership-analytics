@@ -1,0 +1,27 @@
+{
+  "chosen_k": 5,
+  "silhouette_scores": {
+    "2": 0.2343022421860672,
+    "3": 0.28499229357995814,
+    "4": 0.3078224663056268,
+    "5": 0.3088446075206979
+  },
+  "cluster_names": {
+    "0": "Disengaged In-State Long-Tenured (0)",
+    "1": "Engaged In-State Recent Retirees (1)",
+    "2": "Engaged In-State Recent Retirees (2)",
+    "3": "Disengaged Out-of-State Long-Tenured",
+    "4": "Disengaged In-State Long-Tenured (4)"
+  },
+  "cluster_sizes": {
+    "0": 146,
+    "1": 134,
+    "2": 104,
+    "4": 88,
+    "3": 51
+  },
+  "explained_variance_ratio": [
+    0.3305019452703092,
+    0.22286075841967873
+  ]
+}

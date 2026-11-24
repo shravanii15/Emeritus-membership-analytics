@@ -1,0 +1,5 @@
+scenario,peak,width,max_lift,caller_hours,capacity_calls,lift_peak,lift_width,lift_max,greedy_expected_renewals_recovered,optimized_expected_renewals_recovered,improvement_pct
+"Pessimistic (narrow, low lift)",0.42,0.1,0.15,40,200,0.42,0.1,0.15,25.389408154198684,27.99639817842081,10.268022036547576
+Base case,0.42,0.18,0.35,40,200,0.42,0.18,0.35,64.5172125038116,68.43786300546064,6.076906223153097
+"Optimistic (wide, high lift)",0.45,0.25,0.5,40,200,0.45,0.25,0.5,93.32654376698707,98.49599897027852,5.539104947675208
+Null (calls have no effect),0.42,0.18,0.0,40,200,0.42,0.18,0.0,0.0,0.0,0.0

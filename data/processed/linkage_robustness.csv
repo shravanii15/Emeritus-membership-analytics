@@ -1,0 +1,17 @@
+strategy,corruption_level,recall,false_match_rate,miss_rate
+A: exact normalized key,0.0,1.0,0.0,0.0
+A: exact normalized key,0.05,0.4345,0.0,0.5655
+A: exact normalized key,0.1,0.187,0.0,0.8130000000000001
+A: exact normalized key,0.15,0.0775,0.0,0.9225
+A: exact normalized key,0.2,0.0205,0.0,0.9795
+A: exact normalized key,0.3,0.003,0.0,0.9970000000000001
+A: exact normalized key,0.4,0.0,0.0,1.0
+A: exact normalized key,0.5,0.0005,0.0,0.9995
+B: zip-exact + name-similarity,0.0,1.0,0.0,0.0
+B: zip-exact + name-similarity,0.05,0.7845000000000001,0.0,0.21550000000000002
+B: zip-exact + name-similarity,0.1,0.584,0.0,0.41600000000000004
+B: zip-exact + name-similarity,0.15,0.4,0.0,0.6
+B: zip-exact + name-similarity,0.2,0.28200000000000003,0.0,0.718
+B: zip-exact + name-similarity,0.3,0.092,0.0,0.908
+B: zip-exact + name-similarity,0.4,0.024,0.0,0.976
+B: zip-exact + name-similarity,0.5,0.003,0.0,0.9970000000000001

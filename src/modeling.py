@@ -85,6 +85,31 @@ def get_models() -> dict:
     return models
 
 
+def bootstrap_auc_ci(y_true: np.ndarray, y_proba: np.ndarray, n_boot: int = 2000,
+                      ci: float = 0.95, random_state: int = RANDOM_STATE) -> dict:
+    """Bootstrap a confidence interval for test-set ROC-AUC by resampling the
+    test set with replacement n_boot times. Used so the model comparison page
+    can show whether two models' AUCs are actually distinguishable, rather
+    than reporting a single point estimate as if it were exact."""
+    rng = np.random.default_rng(random_state)
+    y_true = np.asarray(y_true)
+    y_proba = np.asarray(y_proba)
+    n = len(y_true)
+    boot_aucs = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        y_b, p_b = y_true[idx], y_proba[idx]
+        if len(np.unique(y_b)) < 2:
+            continue  # skip degenerate resamples with only one class
+        boot_aucs.append(roc_auc_score(y_b, p_b))
+    boot_aucs = np.array(boot_aucs)
+    alpha = (1 - ci) / 2
+    lower, upper = np.quantile(boot_aucs, [alpha, 1 - alpha])
+    return {"point_estimate": float(roc_auc_score(y_true, y_proba)),
+            "ci_lower": float(lower), "ci_upper": float(upper), "ci_level": ci,
+            "n_boot_valid": int(len(boot_aucs))}
+
+
 def evaluate_models(df: pd.DataFrame):
     X = df[NUMERIC_FEATURES + CATEGORICAL_FEATURES]
     y = df[TARGET]
@@ -104,18 +129,35 @@ def evaluate_models(df: pd.DataFrame):
         proba = pipe.predict_proba(X_test)[:, 1]
         preds = (proba >= 0.5).astype(int)
 
+        auc_ci = bootstrap_auc_ci(y_test.values, proba)
+
         results[name] = {
             "cv_roc_auc_mean": float(cv_scores.mean()),
             "cv_roc_auc_std": float(cv_scores.std()),
             "test_roc_auc": float(roc_auc_score(y_test, proba)),
+            "test_roc_auc_ci": auc_ci,
             "test_pr_auc": float(average_precision_score(y_test, proba)),
             "confusion_matrix": confusion_matrix(y_test, preds).tolist(),
             "classification_report": classification_report(y_test, preds, output_dict=True),
+            "test_proba": proba.tolist(),
+            "test_y": y_test.values.tolist(),
         }
         fitted_pipelines[name] = pipe
 
+    # Are the models actually distinguishable? If every model's 95% bootstrap
+    # CI overlaps the best model's point estimate, report them as
+    # statistically indistinguishable rather than crowning a false winner.
     best_name = max(results, key=lambda n: results[n]["test_roc_auc"])
-    return results, fitted_pipelines, best_name, (X_train, X_test, y_train, y_test)
+    best_ci = results[best_name]["test_roc_auc_ci"]
+    indistinguishable_from_best = [
+        name for name, r in results.items()
+        if name != best_name and r["test_roc_auc_ci"]["ci_lower"] <= best_ci["point_estimate"] <= r["test_roc_auc_ci"]["ci_upper"]
+    ] + [
+        name for name, r in results.items()
+        if name != best_name and best_ci["ci_lower"] <= r["test_roc_auc"] <= best_ci["ci_upper"]
+    ]
+    indistinguishable_from_best = sorted(set(indistinguishable_from_best))
+    return results, fitted_pipelines, best_name, (X_train, X_test, y_train, y_test), indistinguishable_from_best
 
 
 def compute_shap_values(pipe: Pipeline, X_test: pd.DataFrame):
@@ -147,21 +189,29 @@ def compute_shap_values(pipe: Pipeline, X_test: pd.DataFrame):
 def main():
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     df = load_features()
-    results, pipelines, best_name, splits = evaluate_models(df)
+    results, pipelines, best_name, splits, indistinguishable = evaluate_models(df)
     X_train, X_test, y_train, y_test = splits
 
-    print("Model comparison (test set ROC-AUC / PR-AUC):")
+    print("Model comparison (test set ROC-AUC / PR-AUC, with 95% bootstrap CI):")
     for name, r in results.items():
-        print(f"  {name:20s} ROC-AUC={r['test_roc_auc']:.3f}  PR-AUC={r['test_pr_auc']:.3f}  "
-              f"CV ROC-AUC={r['cv_roc_auc_mean']:.3f}±{r['cv_roc_auc_std']:.3f}")
-    print(f"\nBest model: {best_name}")
+        ci = r["test_roc_auc_ci"]
+        print(f"  {name:20s} ROC-AUC={r['test_roc_auc']:.3f} [{ci['ci_lower']:.3f}, {ci['ci_upper']:.3f}]  "
+              f"PR-AUC={r['test_pr_auc']:.3f}  CV ROC-AUC={r['cv_roc_auc_mean']:.3f}±{r['cv_roc_auc_std']:.3f}")
+    print(f"\nBest model (highest point estimate): {best_name}")
+    if indistinguishable:
+        print(f"NOTE: {', '.join(indistinguishable)} overlap {best_name}'s confidence interval — "
+              f"not statistically distinguishable from the 'best' model on this test set.")
 
     best_pipe = pipelines[best_name]
 
     with open(MODELS_DIR / "best_model.pkl", "wb") as f:
         pickle.dump(best_pipe, f)
 
-    metrics_out = {"best_model": best_name, "results": results}
+    metrics_out = {
+        "best_model": best_name,
+        "results": results,
+        "indistinguishable_from_best": indistinguishable,
+    }
     with open(MODELS_DIR / "metrics.json", "w") as f:
         json.dump(metrics_out, f, indent=2, default=str)
 

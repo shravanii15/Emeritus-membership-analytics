@@ -46,14 +46,49 @@ def load_scored_population() -> pd.DataFrame:
     return scored.merge(features, on="member_id", suffixes=("", "_feat"))
 
 
-def assumed_call_lift(p_renew: np.ndarray) -> np.ndarray:
+# Default lift-curve assumption. THIS IS A MODELING ASSUMPTION, not a fitted
+# or measured quantity — there is no randomized experiment behind it. It is
+# exposed as explicit parameters (rather than hardcoded constants) precisely
+# so it can be stress-tested: see sensitivity_analysis() below, which checks
+# whether the optimizer's recommendation is robust to disagreement about
+# these parameters, or whether it's a fragile artifact of one specific guess.
+DEFAULT_LIFT_PEAK = 0.42
+DEFAULT_LIFT_WIDTH = 0.18
+DEFAULT_LIFT_MAX = 0.35
+
+
+def assumed_call_lift(p_renew: np.ndarray, peak: float = DEFAULT_LIFT_PEAK,
+                       width: float = DEFAULT_LIFT_WIDTH, max_lift: float = DEFAULT_LIFT_MAX) -> np.ndarray:
     """Assumed probability a call *changes the outcome* (from lapse to renew),
-    peaking for members who are genuinely on the fence (~0.35-0.55 baseline
-    renewal probability) and near-zero for members who were always going to
-    renew or were always going to lapse regardless of contact. This reflects
-    a common finding in nonprofit renewal/membership research: outreach has
-    the most marginal impact on the "movable middle," not the extremes."""
-    return np.exp(-((p_renew - 0.42) ** 2) / (2 * 0.18 ** 2)) * 0.35
+    peaking for members who are genuinely on the fence (baseline renewal
+    probability near `peak`) and near-zero for members who were always going
+    to renew or were always going to lapse regardless of contact. This
+    reflects a common finding in nonprofit renewal/membership research:
+    outreach has the most marginal impact on the "movable middle," not the
+    extremes — but the exact peak/width/magnitude here are assumed, not
+    fitted to a real experiment. Treat results as illustrative of the
+    *approach*, not as a validated effect size."""
+    return np.exp(-((p_renew - peak) ** 2) / (2 * width ** 2)) * max_lift
+
+
+def sensitivity_analysis(df: pd.DataFrame, caller_hours: int, scenarios: dict | None = None) -> pd.DataFrame:
+    """Re-run the optimizer under several different lift-curve assumptions
+    (pessimistic / base case / optimistic, and a flat no-targeting-effect
+    null) to check whether the 'optimization beats greedy' conclusion is
+    robust to disagreement about the assumed behavioral response, rather
+    than being an artifact of one specific guessed curve."""
+    if scenarios is None:
+        scenarios = {
+            "Pessimistic (narrow, low lift)": {"peak": 0.42, "width": 0.10, "max_lift": 0.15},
+            "Base case": {"peak": DEFAULT_LIFT_PEAK, "width": DEFAULT_LIFT_WIDTH, "max_lift": DEFAULT_LIFT_MAX},
+            "Optimistic (wide, high lift)": {"peak": 0.45, "width": 0.25, "max_lift": 0.50},
+            "Null (calls have no effect)": {"peak": 0.42, "width": 0.18, "max_lift": 0.0},
+        }
+    rows = []
+    for scenario_name, params in scenarios.items():
+        result = build_outreach_plan(df, caller_hours=caller_hours, lift_params=params)
+        rows.append({"scenario": scenario_name, **params, **result["summary"]})
+    return pd.DataFrame(rows)
 
 
 def knapsack_select(values: np.ndarray, costs: np.ndarray, capacity: int) -> np.ndarray:
@@ -85,10 +120,12 @@ def knapsack_select(values: np.ndarray, costs: np.ndarray, capacity: int) -> np.
     return selected
 
 
-def build_outreach_plan(df: pd.DataFrame, caller_hours: int = DEFAULT_CALLER_HOURS) -> dict:
+def build_outreach_plan(df: pd.DataFrame, caller_hours: int = DEFAULT_CALLER_HOURS,
+                         lift_params: dict | None = None) -> dict:
+    lift_params = lift_params or {"peak": DEFAULT_LIFT_PEAK, "width": DEFAULT_LIFT_WIDTH, "max_lift": DEFAULT_LIFT_MAX}
     capacity_calls = int(caller_hours * 60 / MINUTES_PER_CALL)
     df = df.copy()
-    df["call_lift"] = assumed_call_lift(df["predicted_renewal_probability"].values)
+    df["call_lift"] = assumed_call_lift(df["predicted_renewal_probability"].values, **lift_params)
     df["expected_marginal_renewals"] = df["call_lift"]  # 1 call slot = cost 1, so value == lift
     costs = np.ones(len(df), dtype=int)
 
@@ -110,6 +147,9 @@ def build_outreach_plan(df: pd.DataFrame, caller_hours: int = DEFAULT_CALLER_HOU
     summary = {
         "caller_hours": caller_hours,
         "capacity_calls": capacity_calls,
+        "lift_peak": lift_params["peak"],
+        "lift_width": lift_params["width"],
+        "lift_max": lift_params["max_lift"],
         "greedy_expected_renewals_recovered": float(greedy_expected_gain),
         "optimized_expected_renewals_recovered": float(optimized_expected_gain),
         "improvement_pct": float(improvement_pct),
@@ -138,6 +178,13 @@ def main():
         json.dump(result["summary"], f, indent=2)
 
     print(f"\nWrote outreach plans to {PROCESSED_DIR}")
+
+    print("\nSensitivity analysis: does 'optimization beats greedy' hold under different assumptions?")
+    sens = sensitivity_analysis(df, caller_hours=DEFAULT_CALLER_HOURS)
+    print(sens[["scenario", "greedy_expected_renewals_recovered",
+                "optimized_expected_renewals_recovered", "improvement_pct"]].to_string(index=False))
+    sens.to_csv(PROCESSED_DIR / "optimization_sensitivity.csv", index=False)
+    print(f"Wrote sensitivity analysis to {PROCESSED_DIR / 'optimization_sensitivity.csv'}")
 
 
 if __name__ == "__main__":

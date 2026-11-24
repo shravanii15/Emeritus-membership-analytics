@@ -6,10 +6,32 @@ and a budget-constrained outreach optimizer — built on fully **synthetic**
 data and deployed as an interactive Streamlit dashboard.
 
 **🔗 Live demo:** _add your Streamlit Community Cloud URL here after deploying_
+**📂 Repo:** https://github.com/shravanii15/Emeritus-membership-analytics
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-![Tests](https://github.com/<your-username>/<your-repo>/actions/workflows/tests.yml/badge.svg)
+![Tests](https://github.com/shravanii15/Emeritus-membership-analytics/actions/workflows/tests.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+## Research question
+
+Most of this project is a methods *demonstration* (the data is synthetic,
+so there's nothing real to "discover" about emeritus faculty). But one
+page asks — and answers — a genuine, falsifiable question that doesn't
+depend on the data being real:
+
+> **How robust is fuzzy name+zip record linkage to data-entry noise, and
+> is there a linkage strategy that degrades more gracefully?**
+
+`src/linkage_robustness.py` runs a controlled experiment: synthetic
+identities are corrupted with realistic typos/transpositions at increasing
+rates, and two linkage strategies (the exact-match key actually used
+elsewhere in this project vs. a zip-gated similarity-threshold alternative)
+are compared on recall and false-match rate. The finding — exact-match
+recall collapses to ~43% at just 5% character corruption while the
+alternative holds up far better, with **no measurable increase in false
+matches for either strategy** — is a real, reproducible, and actionable
+result about the *method*, independent of what the underlying data is. See
+the **Linkage Robustness Experiment** page in the dashboard.
 
 ---
 
@@ -37,8 +59,9 @@ membership records — without exposing any private information.**
 | 🏗️ Feature engineering | `src/features.py` | Tenure/recency features, engagement scoring, renewal-target construction |
 | 🤖 Supervised ML | `src/modeling.py` | Logistic Regression / Random Forest / XGBoost comparison, stratified CV, ROC-AUC & PR-AUC, SHAP interpretability |
 | 🧩 Unsupervised ML | `src/segmentation.py` | K-Means segmentation with silhouette-based k selection, PCA visualization |
-| 📞 Decision science | `src/optimization.py` | Budget-constrained 0/1 knapsack outreach optimizer — connects the model to an actual resource-allocation decision |
-| 📊 Deployment | `app.py` + `pages/` | 6-page interactive Streamlit dashboard |
+| 📞 Decision science | `src/optimization.py` | Budget-constrained 0/1 knapsack outreach optimizer, with a sensitivity analysis over the assumed behavioral response instead of treating it as fact |
+| 🔬 Methods research | `src/linkage_robustness.py` | A controlled experiment on linkage-strategy robustness under data-entry noise — a real, falsifiable finding independent of the synthetic data |
+| 📊 Deployment | `app.py` + `pages/` | 7-page interactive Streamlit dashboard |
 | ✅ Quality | `tests/` + `.github/workflows/tests.yml` | 34 pytest unit tests, run automatically in CI on every push |
 
 ## Dashboard pages
@@ -48,14 +71,15 @@ membership records — without exposing any private information.**
 3. **Exploratory Data Analysis** — renewal patterns, geography, tenure, discipline
 4. **Renewal Prediction Model** — model comparison, ROC/PR curves, confusion matrix, global + per-member SHAP explanations
 5. **Member Segmentation** — interactive cluster map with suggested outreach messaging per segment
-6. **Outreach Budget Optimizer** — interactive caller-hours slider; compares a greedy vs. expected-value-maximizing call list, with CSV export
+6. **Outreach Budget Optimizer** — interactive caller-hours and lift-assumption sliders; compares a greedy vs. expected-value-maximizing call list, plus a sensitivity analysis across four behavioral-response scenarios, with CSV export
 7. **About & Methodology** — data privacy notes, skills map, limitations and honest caveats
+8. **Linkage Robustness Experiment** — the project's research question: a controlled test of how two record-linkage strategies hold up under increasing data-entry noise
 
 ## Quickstart
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
+git clone https://github.com/shravanii15/Emeritus-membership-analytics.git
+cd Emeritus-membership-analytics
 pip install -r requirements.txt
 
 # Regenerate the processed data / model artifacts from the raw synthetic files
@@ -84,6 +108,7 @@ pytest tests/ -v
 │   ├── modeling.py             # Supervised renewal/churn model + SHAP
 │   ├── segmentation.py         # K-Means member segmentation
 │   ├── optimization.py         # Budget-constrained outreach optimizer
+│   ├── linkage_robustness.py   # Research question: linkage strategy robustness experiment
 │   └── pipeline.py             # Orchestrates the full pipeline end to end
 ├── tests/                      # pytest unit tests
 ├── data/

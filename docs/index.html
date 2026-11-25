@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emeritus College Membership Analytics — Case Study</title>
+<meta name="description" content="Turning three years of scattered membership spreadsheets into one trustworthy system, and a data-driven case for protecting the budget.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15171b; --bg2:#1b1e24; --card:#1f232b; --card-border:#2b303a;
+    --maroon:#C8375A; --maroon-deep:#8C1D40; --gold:#FFC627;
+    --text:#EDEFF2; --text-dim:#A7AEB8; --text-faint:#6E7682;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; letter-spacing:-0.01em; margin:0;}
+  .wrap{max-width:1040px; margin:0 auto; padding:0 24px;}
+  a{color:var(--gold); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* ---------- Nav ---------- */
+  nav{position:sticky; top:0; z-index:10; backdrop-filter:blur(10px); background:rgba(21,23,27,0.85); border-bottom:1px solid var(--card-border);}
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; padding:14px 24px;}
+  .brand{font-family:'Fraunces',serif; font-weight:600; font-size:1.05rem; color:var(--text);}
+  .brand span{color:var(--gold);}
+  nav .links{display:flex; gap:28px; font-size:0.92rem; color:var(--text-dim);}
+  nav .links a{color:var(--text-dim);}
+  nav .links a:hover{color:var(--text); text-decoration:none;}
+
+  /* ---------- Hero ---------- */
+  header.hero{padding:88px 0 56px; text-align:center; background:
+    radial-gradient(ellipse 900px 420px at 50% -10%, rgba(200,55,90,0.22), transparent 60%);
+  }
+  .eyebrow{
+    display:inline-block; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
+    color:var(--gold); background:rgba(255,198,39,0.1); border:1px solid rgba(255,198,39,0.3);
+    padding:6px 14px; border-radius:999px; margin-bottom:22px; font-weight:600;
+  }
+  h1.title{font-size:2.6rem; max-width:760px; margin:0 auto 18px; color:var(--text);}
+  .hero p.sub{font-size:1.1rem; color:var(--text-dim); max-width:620px; margin:0 auto 34px;}
+  .cta-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap;}
+  .btn{
+    display:inline-flex; align-items:center; gap:8px; padding:12px 22px; border-radius:10px;
+    font-weight:600; font-size:0.95rem; transition:transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .btn-primary{background:var(--gold); color:#1a1200;}
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 8px 20px rgba(255,198,39,0.25); text-decoration:none;}
+  .btn-ghost{background:transparent; border:1px solid var(--card-border); color:var(--text);}
+  .btn-ghost:hover{border-color:var(--text-dim); text-decoration:none;}
+
+  /* ---------- KPI strip ---------- */
+  .kpi-strip{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin:48px 0 0;}
+  .kpi{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:22px 20px; text-align:center;}
+  .kpi .num{font-family:'Fraunces',serif; font-size:2rem; font-weight:600; color:var(--gold);}
+  .kpi .label{font-size:0.82rem; color:var(--text-dim); margin-top:6px;}
+  .kpi .note{font-size:0.72rem; color:var(--text-faint); margin-top:4px;}
+
+  section{padding:64px 0;}
+  section.alt{background:var(--bg2); border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border);}
+  .section-head{max-width:620px; margin:0 auto 42px; text-align:center;}
+  .section-head h2{font-size:1.8rem; margin-bottom:12px;}
+  .section-head p{color:var(--text-dim); font-size:1rem;}
+
+  /* ---------- Problem narrative ---------- */
+  .narrative{max-width:700px; margin:0 auto; font-size:1.02rem; color:var(--text-dim);}
+  .narrative strong{color:var(--text);}
+  .narrative blockquote{
+    margin:26px 0; padding:18px 22px; border-left:3px solid var(--gold);
+    background:rgba(255,198,39,0.06); border-radius:0 10px 10px 0; color:var(--text); font-style:italic;
+  }
+
+  /* ---------- Pillars grid ---------- */
+  .pillars{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .pillar{background:var(--card); border:1px solid var(--card-border); border-radius:var(--radius); padding:26px;}
+  .pillar .icon{font-size:1.6rem; margin-bottom:12px;}
+  .pillar h3{font-size:1.05rem; margin-bottom:8px; font-family:'Inter',sans-serif; font-weight:700; color:var(--text);}
+  .pillar p{font-size:0.9rem; color:var(--text-dim); margin:0;}
+
+  /* ---------- Case study ---------- */
+  .case{display:grid; gap:18px;}
+  .case-row{display:grid; grid-template-columns:160px 1fr; gap:22px; padding:22px 0; border-bottom:1px solid var(--card-border);}
+  .case-row:last-child{border-bottom:none;}
+  .case-row .tag{font-size:0.78rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold); font-weight:700; padding-top:2px;}
+  .case-row .body{color:var(--text-dim); font-size:0.95rem;}
+  .case-row .body strong{color:var(--text);}
+  .placeholder{color:var(--text-faint); font-style:italic;}
+
+  /* ---------- Stack strip ---------- */
+  .stack{display:flex; flex-wrap:wrap; gap:10px; justify-content:center;}
+  .chip{background:var(--card); border:1px solid var(--card-border); padding:7px 14px; border-radius:999px; font-size:0.82rem; color:var(--text-dim);}
+
+  /* ---------- Limitations ---------- */
+  .limit-box{
+    max-width:700px; margin:0 auto; background:rgba(200,55,90,0.08); border:1px solid rgba(200,55,90,0.3);
+    border-radius:var(--radius); padding:24px 26px;
+  }
+  .limit-box h3{font-size:1rem; margin-bottom:10px; color:var(--text);}
+  .limit-box ul{margin:0; padding-left:20px; color:var(--text-dim); font-size:0.92rem;}
+  .limit-box li{margin-bottom:8px;}
+
+  footer{padding:40px 0 60px; text-align:center; color:var(--text-faint); font-size:0.85rem;}
+  footer a{color:var(--text-dim);}
+
+  @media (max-width:760px){
+    .kpi-strip{grid-template-columns:repeat(2,1fr);}
+    .pillars{grid-template-columns:1fr;}
+    .case-row{grid-template-columns:1fr; gap:6px;}
+    h1.title{font-size:2rem;}
+    nav .links{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand">Emeritus College <span>Membership Analytics</span></div>
+    <div class="links">
+      <a href="#problem">Problem</a>
+      <a href="#built">What I built</a>
+      <a href="#case-study">Case study</a>
+      <a href="#limitations">Limitations</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Portfolio case study · synthetic data</span>
+    <h1 class="title">Turning three scattered spreadsheets into one trustworthy membership system</h1>
+    <p class="sub">A record-linkage pipeline, a renewal-risk model, and a budget-impact analysis — built for a university's
+    retiree association, rebuilt here on 100% synthetic data so it can be shown publicly.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://share.streamlit.io/" id="live-link">→ Explore the live technical dashboard</a>
+      <a class="btn btn-ghost" href="https://github.com/shravanii15/Emeritus-membership-analytics">View source on GitHub</a>
+    </div>
+
+    <div class="kpi-strip">
+      <div class="kpi"><div class="num">1,194</div><div class="label">Records reconciled</div><div class="note">across 3 source files</div></div>
+      <div class="kpi"><div class="num">523</div><div class="label">Active members modeled</div><div class="note">after cleaning</div></div>
+      <div class="kpi"><div class="num">3→1</div><div class="label">Spreadsheets unified</div><div class="note">dues, EV subscriptions, roster</div></div>
+      <div class="kpi"><div class="num">$4.8K–20K</div><div class="label">Est. annual savings identified</div><div class="note">parking-pass budget analysis</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="problem">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>The problem</h2>
+    </div>
+    <div class="narrative">
+      <p>A university's emeritus (retired-faculty) association kept its member roster, dues payments, and subscription
+      records in <strong>three separate spreadsheets maintained by different people over several years</strong>. There
+      was no shared ID between them — just names, with all the usual real-world mess: typos, nicknames, people who
+      moved, duplicate entries.</p>
+      <blockquote>Nobody could reliably answer "who's actually an active member right now?" — let alone
+      "who's at risk of not renewing?" or "are we spending money on benefits people don't use?"</blockquote>
+      <p>This project rebuilds that into <strong>one clean, linked dataset</strong>, then uses it to predict renewal
+      risk, segment members for more relevant outreach, optimize a volunteer phone campaign under a real time
+      constraint, and test a specific budget question: should out-of-state members keep getting campus parking
+      passes they're unlikely to use?</p>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="built">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>What I built</h2>
+      <p>Five pieces, each solving one part of the problem — all documented and tested in the repo.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar"><div class="icon">🧹</div><h3>Record linkage</h3><p>A two-tier fuzzy matching strategy (ID first, normalized name+zip second) reconciles the three files into one trustworthy member record.</p></div>
+      <div class="pillar"><div class="icon">🤖</div><h3>Renewal prediction</h3><p>Three models compared with cross-validation and bootstrap confidence intervals, plus SHAP explanations for every prediction.</p></div>
+      <div class="pillar"><div class="icon">🧩</div><h3>Member segmentation</h3><p>K-Means groups members into behaviorally distinct types, so outreach messaging isn't one-size-fits-all.</p></div>
+      <div class="pillar"><div class="icon">📞</div><h3>Outreach optimizer</h3><p>A budget-constrained optimizer decides who a limited volunteer phone team should call to recover the most renewals per hour.</p></div>
+      <div class="pillar"><div class="icon">🅿️</div><h3>Budget-impact analysis</h3><p>Estimates the savings from not issuing parking passes to out-of-state members — shown as a range, not a false-precision number.</p></div>
+      <div class="pillar"><div class="icon">🔬</div><h3>Methods research</h3><p>A controlled experiment testing how record-linkage accuracy degrades under data-entry noise — the one fully falsifiable finding.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="case-study">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Case study</h2>
+      <p>Problem → constraints → decisions → results, the way I'd walk through it in an interview.</p>
+    </div>
+    <div class="case">
+      <div class="case-row">
+        <div class="tag">Problem</div>
+        <div class="body">Years of fragmented membership and dues spreadsheets meant the association had no reliable,
+        unified view of who was an active member — let alone whether a recurring cost like parking passes was being
+        allocated well.</div>
+      </div>
+      <div class="case-row">
+        <div class="tag">Constraints</div>
+        <div class="body">The underlying data is sensitive (names, addresses, payment records), and the people who
+        needed the answer — membership-office staff — are not technical users. Any tool had to protect privacy by
+        design and be usable without a data background.</div>
+      </div>
+      <div class="case-row">
+        <div class="tag">Decisions</div>
+        <div class="body">Built a two-tier record-linkage strategy instead of requiring a shared ID that didn't
+        exist. Published this version on <strong>synthetic data</strong> so the method and code can be shared
+        publicly. Framed every dollar estimate as a sensitivity range rather than a single confident number, because
+        the source data can't fully confirm usage.</div>
+      </div>
+      <div class="case-row">
+        <div class="tag">Results</div>
+        <div class="body placeholder">Add the specific numbers already on your résumé from the real engagement here
+        — members reconciled, discrepancies found, dollars identified, hours saved. This synthetic rebuild
+        intentionally doesn't invent those.</div>
+      </div>
+      <div class="case-row">
+        <div class="tag">What I'd do<br>differently</div>
+        <div class="body">Capture actual benefit-usage data (e.g. parking-pass swipes) at intake, so budget-impact
+        analyses are measured rather than estimated.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Built with</h2>
+    </div>
+    <div class="stack">
+      <span class="chip">Python</span><span class="chip">pandas</span><span class="chip">scikit-learn</span>
+      <span class="chip">XGBoost</span><span class="chip">SHAP</span><span class="chip">Streamlit</span>
+      <span class="chip">Plotly</span><span class="chip">pytest</span><span class="chip">GitHub Actions</span>
+    </div>
+  </div>
+</section>
+
+<section id="limitations">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Honest limitations</h2>
+    </div>
+    <div class="limit-box">
+      <h3>What this project doesn't claim</h3>
+      <ul>
+        <li>All data is 100% synthetic — the patterns the model finds are patterns built into the generator, not
+        real-world discoveries. The linkage robustness experiment (on the live dashboard, linked above) is the one
+        exception: it's a claim about the method, independent of the data being fake.</li>
+        <li>The parking-pass savings estimate rests on two unmeasured assumptions (per-pass cost, actual usage rate)
+        — it's shown as a range, and its real recommendation is "audit this," not the dollar figure itself.</li>
+        <li>The outreach "call lift" curve is an assumed behavioral model, not fit from a randomized experiment.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>All data on this site is synthetically generated and does not represent any real person.<br>
+    <a href="https://github.com/shravanii15/Emeritus-membership-analytics">Source on GitHub</a> ·
+    <a href="https://share.streamlit.io/" id="live-link-2">Live technical dashboard</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -5,7 +5,8 @@ renewal/churn prediction with model interpretability, member segmentation,
 and a budget-constrained outreach optimizer — built on fully **synthetic**
 data and deployed as an interactive Streamlit dashboard.
 
-**🔗 Live demo:** _add your Streamlit Community Cloud URL here after deploying_
+**📄 Case study (start here):** https://shravanii15.github.io/Emeritus-membership-analytics/ _(enable via repo Settings → Pages → source: `docs/` on `main` — see below)_
+**🔗 Live technical dashboard:** _add your Streamlit Community Cloud URL here after deploying_
 **📂 Repo:** https://github.com/shravanii15/Emeritus-membership-analytics
 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
@@ -112,6 +113,22 @@ membership records — without exposing any private information.**
 
 `src/pipeline.py` runs every stage above, in order, in one command.
 
+## Case-study landing page
+
+`docs/index.html` is a single, polished, non-technical case-study page — the thing to link from
+your résumé or LinkedIn, instead of the Streamlit app directly. It leads with the plain-English
+problem, headline numbers, and a short case study, with a button through to the full technical
+dashboard for anyone who wants to dig in.
+
+**To publish it for free on GitHub Pages:**
+1. Push this repo (already done if you're reading this on GitHub).
+2. Go to the repo's **Settings → Pages**.
+3. Under "Build and deployment", set **Source: Deploy from a branch**, **Branch: `main`**,
+   **Folder: `/docs`**. Save.
+4. GitHub gives you a URL like `https://<username>.github.io/<repo-name>/` within a minute or two.
+5. Open `docs/index.html`, find the two `share.streamlit.io` placeholder links, and replace them
+   with your actual deployed Streamlit URL once you have it.
+
 ## Quickstart
 
 ```bash
@@ -153,6 +170,7 @@ pytest tests/ -v
 │   ├── raw/                    # Synthetic source spreadsheets + data dictionary
 │   └── processed/              # Generated: cleaned data, model artifacts, plans
 ├── notebooks/                  # Executed EDA + modeling walkthrough notebook
+├── docs/index.html             # Polished case-study landing page (publish via GitHub Pages)
 ├── .github/workflows/tests.yml # CI: runs the pipeline + full test suite on every push
 └── requirements.txt
 ```

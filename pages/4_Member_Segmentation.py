@@ -4,8 +4,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from src.ui_theme import inject_theme, page_nav, hero, read_more
+
 st.set_page_config(page_title="Member Segmentation", page_icon="🧩", layout="wide")
-st.title("🧩 Member Segmentation (Unsupervised Learning)")
+inject_theme()
+page_nav()
 
 try:
     segments = pd.read_csv("data/processed/member_segments.csv")
@@ -15,13 +18,17 @@ except FileNotFoundError:
     st.warning("Run `python -m src.pipeline` first.")
     st.stop()
 
-st.markdown(
-    f"""
-K-Means clustering groups active members into behaviorally distinct
-segments for targeted outreach messaging, independent of (and complementary
-to) the renewal-prediction model. The number of clusters (**k = {summary['chosen_k']}**)
-was chosen by maximizing silhouette score across k = 2–5.
-"""
+hero("🧩", "Member Segmentation", f"K-Means grouped members into {summary['chosen_k']} behaviorally distinct segments for targeted outreach.")
+
+k1, k2, k3 = st.columns(3)
+k1.metric("Segments (k)", summary["chosen_k"])
+k2.metric("Members segmented", len(segments))
+k3.metric("Variance explained by 2D view", f"{sum(summary['explained_variance_ratio']):.0%}")
+
+read_more(
+    "ℹ️ How were the segments chosen? (click to expand)",
+    f"K was chosen by maximizing silhouette score across k = 2–5 (chosen: k = {summary['chosen_k']}). "
+    "This runs independent of, and complements, the renewal-prediction model.",
 )
 
 c1, c2 = st.columns([2, 1])

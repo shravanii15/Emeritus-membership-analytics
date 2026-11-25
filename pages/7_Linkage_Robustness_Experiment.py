@@ -3,29 +3,27 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from src.ui_theme import inject_theme, page_nav, hero, read_more
+
 st.set_page_config(page_title="Linkage Robustness Experiment", page_icon="🔬", layout="wide")
-st.title("🔬 Research Question: How Robust Is Fuzzy Record Linkage?")
+inject_theme()
+page_nav()
+hero("🔬", "Research Question: How Robust Is Fuzzy Record Linkage?",
+     "A controlled experiment — independent of whether the data is real or synthetic.")
 
-st.markdown(
+read_more(
+    "ℹ️ Method (click to expand)",
     """
-Every other page in this project uses one fixed linkage rule (normalized
-`last_name + first_name + zip` exact match, in `src/data_cleaning.py`) to
-join records across the three source spreadsheets. But *how good is that
-rule, really* — and is there a better one? That's an empirical question we
-can actually answer with a controlled experiment, independent of whether
-the underlying membership data is real or synthetic.
+Every other page uses one fixed linkage rule (normalized `last_name + first_name + zip` exact
+match, in `src/data_cleaning.py`) to join records. But *how good is that rule, really* — and is
+there a better one? Generate 400 synthetic identities, create a "noisy" second-system copy of
+each at increasing levels of character-level data-entry corruption (typos, transpositions,
+duplicated letters, altered zip digits), and measure how well each strategy recovers the match:
 
-**Method:** generate 400 synthetic identities, create a "noisy" second-
-system copy of each at increasing levels of character-level data-entry
-corruption (typos, transpositions, duplicated letters, altered zip digits),
-and measure how well each linkage strategy recovers the correct match:
-
-- **Strategy A (production)** — exact match on the normalized key, exactly
-  as implemented and used elsewhere in this project.
-- **Strategy B (alternative)** — exact zip match narrows candidates, then
-  accept the best name-similarity score (`difflib` ratio) above a
-  threshold (0.82).
-"""
+- **Strategy A (production)** — exact match on the normalized key, as used elsewhere in this project.
+- **Strategy B (alternative)** — exact zip match narrows candidates, then accepts the best
+  name-similarity score (`difflib` ratio) above a threshold (0.82).
+""",
 )
 
 try:
@@ -33,6 +31,15 @@ try:
 except FileNotFoundError:
     st.warning("Run `python -m src.linkage_robustness` first.")
     st.stop()
+
+a5 = results[(results.strategy.str.startswith("A")) & (results.corruption_level == 0.05)]["recall"].values[0]
+b5 = results[(results.strategy.str.startswith("B")) & (results.corruption_level == 0.05)]["recall"].values[0]
+max_false = results["false_match_rate"].max()
+
+k1, k2, k3 = st.columns(3)
+k1.metric("Strategy A recall at 5% noise", f"{a5:.0%}", delta="-57pp vs. no noise", delta_color="inverse")
+k2.metric("Strategy B recall at 5% noise", f"{b5:.0%}", delta=f"+{(b5-a5)*100:.0f}pp vs. Strategy A")
+k3.metric("Max false-match rate (either strategy)", f"{max_false:.1%}")
 
 c1, c2 = st.columns(2)
 with c1:
@@ -56,40 +63,27 @@ with c2:
     fig2.update_xaxes(tickformat=".0%")
     st.plotly_chart(fig2, use_container_width=True)
 
-a5 = results[(results.strategy.str.startswith("A")) & (results.corruption_level == 0.05)]["recall"].values[0]
-b5 = results[(results.strategy.str.startswith("B")) & (results.corruption_level == 0.05)]["recall"].values[0]
 a10 = results[(results.strategy.str.startswith("A")) & (results.corruption_level == 0.10)]["recall"].values[0]
 b10 = results[(results.strategy.str.startswith("B")) & (results.corruption_level == 0.10)]["recall"].values[0]
-max_false = results["false_match_rate"].max()
 
 st.subheader("📌 Findings")
 st.markdown(
-    f"""
-1. **Exact-key matching is fragile.** At just **5% character-level
-   corruption** (roughly one typo every 20 characters — realistic for
-   manual data entry), production recall drops from 100% to **{a5:.0%}**.
-   By 10% corruption it's down to **{a10:.0%}**.
-2. **The similarity-threshold alternative degrades far more gracefully**:
-   **{b5:.0%}** recall at 5% corruption and **{b10:.0%}** at 10% —
-   roughly {b10/a10:.1f}x better recall than the exact-key method at that
-   noise level, for the same records.
-3. **Neither method produces meaningful false matches** (max observed rate:
-   {max_false:.1%}). The zip-code pre-filter is doing the real precision
-   work in both strategies — the dominant failure mode is **missed
-   matches, not wrong matches**. In a production setting, this means the
-   bigger operational risk from the current linkage rule is silently
-   *dropping* real members from the linked dataset, not accidentally
-   merging two different people's records.
-
-**Practical implication:** if this linkage pipeline were deployed against
-a system of record with meaningfully noisy data entry (common in manually
-maintained membership spreadsheets), switching to a similarity-threshold
-strategy would recover materially more true matches at no measurable cost
-in false-positive linkage — a concrete, testable recommendation that
-synthetic data is perfectly suited to produce, because it's a claim about
-the *method*, not about the (synthetic) people in it.
-"""
+    f"**Exact-key matching is fragile** — recall drops from 100% to {a5:.0%} at just 5% noise "
+    f"(100% → {a10:.0%} by 10%). **The similarity-threshold alternative degrades more gracefully** "
+    f"({b5:.0%} → {b10:.0%} over the same range, ~{b10/a10:.1f}x better at 10%). "
+    f"**Neither method produces meaningful false matches** — the zip-code pre-filter does the real "
+    f"precision work, so the dominant failure mode is *missed* matches, not *wrong* ones."
+)
+read_more(
+    "💡 Practical implication (click to expand)",
+    """
+If this linkage pipeline were deployed against a system of record with meaningfully noisy data
+entry (common in manually maintained membership spreadsheets), switching to a similarity-threshold
+strategy would recover materially more true matches at no measurable cost in false-positive
+linkage — a concrete, testable recommendation that synthetic data is perfectly suited to produce,
+because it's a claim about the *method*, not about the (synthetic) people in it.
+""",
 )
 
-st.subheader("Raw results")
-st.dataframe(results.round(4), use_container_width=True)
+with st.expander("📋 Raw results table"):
+    st.dataframe(results.round(4), use_container_width=True)

@@ -3,33 +3,29 @@ import plotly.express as px
 import streamlit as st
 
 from src.optimization import build_outreach_plan, sensitivity_analysis, MINUTES_PER_CALL
+from src.ui_theme import inject_theme, page_nav, hero, read_more
 
 st.set_page_config(page_title="Outreach Budget Optimizer", page_icon="📞", layout="wide")
-st.title("📞 Budget-Constrained Outreach Optimizer")
+inject_theme()
+page_nav()
+hero("📞", "Budget-Constrained Outreach Optimizer",
+     "Given limited volunteer caller-hours, whom should the phone campaign call to maximize renewals recovered?")
 
-st.markdown(
+st.warning(
+    "⚠️ **The 'call lift' curve below is an assumption, not a measured effect** — there's no "
+    "randomized experiment behind it. Use the sliders to stress-test whether 'optimization beats "
+    "greedy' survives disagreement about that assumption (see the **Sensitivity analysis** tab)."
+)
+
+read_more(
+    "ℹ️ The two strategies being compared (click to expand)",
     """
-This page turns the renewal-risk model into an **actionable decision**: given
-a limited number of volunteer caller-hours this cycle, whom should the phone
-campaign call to maximize expected renewals recovered?
-
-Two strategies are compared:
 1. **Greedy (highest-risk-first)** — call whoever is least likely to renew.
-2. **Expected-value-maximizing (0/1 knapsack)** — call members where a
-   conversation has the highest *marginal* persuasive value — the
-   "movable middle" who are genuinely undecided, rather than members who
-   were always going to lapse (a call won't help) or always going to renew
-   anyway (a call is wasted effort).
-
-⚠️ **This page makes an assumption it can't prove.** There is no randomized
-experiment behind the "call lift" curve — it's a modeling choice based on
-what nonprofit renewal literature generally reports (persuasion is highest
-for the "movable middle"), not a measured effect for this organization. So
-rather than presenting one fixed curve as truth, this page treats it as a
-**parameter to stress-test**: use the sliders below to see whether the
-"optimization beats greedy" conclusion survives disagreement about the
-assumption, or whether it's fragile.
-"""
+2. **Expected-value-maximizing (0/1 knapsack)** — call members where a conversation has the
+   highest *marginal* persuasive value — the "movable middle" who are genuinely undecided, rather
+   than members who were always going to lapse (a call won't help) or always going to renew anyway
+   (a call is wasted effort).
+""",
 )
 
 try:

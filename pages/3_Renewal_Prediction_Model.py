@@ -7,8 +7,13 @@ import plotly.graph_objects as go
 import streamlit as st
 from sklearn.metrics import confusion_matrix, precision_score, recall_score, roc_curve, precision_recall_curve
 
+from src.ui_theme import inject_theme, page_nav, hero, read_more
+
 st.set_page_config(page_title="Renewal Prediction Model", page_icon="🤖", layout="wide")
-st.title("🤖 Renewal / Churn Prediction Model")
+inject_theme()
+page_nav()
+hero("🤖", "Renewal / Churn Prediction Model",
+     "Predicts whether an active member renews this cycle, using only signals known before the renewal window closes.")
 
 MODELS_DIR = "data/processed/models"
 
@@ -61,25 +66,23 @@ k3.metric("Test ROC-AUC (95% CI)", f"{best_ci['point_estimate']:.2f}",
           help=f"[{best_ci['ci_lower']:.3f}, {best_ci['ci_upper']:.3f}] — bootstrap, {best_ci['n_boot_valid']} resamples")
 k4.metric("Flagged at-risk (p < 0.5)", f"{n_at_risk} / {n_test}")
 
-st.markdown(
-    """
-Each model predicts whether an **active** member will renew (pay dues or
-hold a current EV subscription) this cycle, using only signals available
-**before** the renewal window closes — tenure, recency, location,
-discipline, and prior engagement. Evaluated with stratified 5-fold
-cross-validation plus a held-out 25% test set.
-"""
-)
-
 if indistinguishable:
     st.warning(
-        f"⚠️ **Honest caveat:** `{best_model}` has the highest point-estimate ROC-AUC, but its "
-        f"95% bootstrap confidence interval overlaps **{', '.join(m.replace('_', ' ') for m in indistinguishable)}**. "
-        f"On this test set (n={n_test}), these models are **not statistically distinguishable** — "
-        f"the 'best model' label reflects a point estimate, not a significant difference. "
-        f"`{best_model}` is used below because it's the simplest of the models that are tied for best "
-        f"(fewer hyperparameters, directly interpretable coefficients)."
+        f"⚠️ **Honest caveat:** `{best_model}` has the highest point estimate, but its 95% CI "
+        f"overlaps **{', '.join(m.replace('_', ' ') for m in indistinguishable)}** — not "
+        f"statistically distinguishable on this test set (n={n_test}). Used below for simplicity, "
+        f"not because it significantly outperforms the others."
     )
+
+read_more(
+    "ℹ️ What is this model predicting, exactly? (click to expand)",
+    """
+Each model predicts whether an **active** member will renew (pay dues or hold a current EV
+subscription) this cycle, using only signals available **before** the renewal window closes —
+tenure, recency, location, discipline, and prior engagement. Evaluated with stratified 5-fold
+cross-validation plus a held-out 25% test set.
+""",
+)
 
 tab1, tab2, tab3 = st.tabs(["📊 Model comparison", "🎯 Threshold explorer", "🔍 SHAP interpretability"])
 

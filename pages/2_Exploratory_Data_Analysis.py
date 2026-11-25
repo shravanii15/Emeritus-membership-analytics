@@ -2,8 +2,11 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from src.ui_theme import inject_theme, page_nav, hero
+
 st.set_page_config(page_title="Exploratory Data Analysis", page_icon="📊", layout="wide")
-st.title("📊 Exploratory Data Analysis")
+inject_theme()
+page_nav()
 
 try:
     features = pd.read_csv("data/processed/member_features.csv")
@@ -12,7 +15,7 @@ except FileNotFoundError:
     st.warning("Run `python -m src.pipeline` first.")
     st.stop()
 
-st.markdown("Exploring the **active member population** (n = {}) that the renewal model is trained on.".format(len(features)))
+hero("📊", "Exploratory Data Analysis", f"Exploring the active member population (n = {len(features)}) the renewal model is trained on.")
 
 tab1, tab2, tab3, tab4 = st.tabs(["Renewal patterns", "Geography", "Tenure", "Discipline"])
 

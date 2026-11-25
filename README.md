@@ -61,8 +61,9 @@ membership records — without exposing any private information.**
 | 🧩 Unsupervised ML | `src/segmentation.py` | K-Means segmentation with silhouette-based k selection, PCA visualization |
 | 📞 Decision science | `src/optimization.py` | Budget-constrained 0/1 knapsack outreach optimizer, with a sensitivity analysis over the assumed behavioral response instead of treating it as fact |
 | 🔬 Methods research | `src/linkage_robustness.py` | A controlled experiment on linkage-strategy robustness under data-entry noise — a real, falsifiable finding independent of the synthetic data |
-| 📊 Deployment | `app.py` + `pages/` | 7-page interactive Streamlit dashboard |
-| ✅ Quality | `tests/` + `.github/workflows/tests.yml` | 34 pytest unit tests, run automatically in CI on every push |
+| 💰 Decision analysis | `src/parking_analysis.py` | Budget-impact estimate (out-of-state parking-pass cost) framed as an assumption-driven range with sensitivity analysis, not a single confident number |
+| 📊 Deployment | `app.py` + `pages/` | 8-page interactive Streamlit dashboard |
+| ✅ Quality | `tests/` + `.github/workflows/tests.yml` | 44 pytest unit tests, run automatically in CI on every push |
 
 ## Dashboard pages
 
@@ -74,6 +75,42 @@ membership records — without exposing any private information.**
 6. **Outreach Budget Optimizer** — interactive caller-hours and lift-assumption sliders; compares a greedy vs. expected-value-maximizing call list, plus a sensitivity analysis across four behavioral-response scenarios, with CSV export
 7. **About & Methodology** — data privacy notes, skills map, limitations and honest caveats
 8. **Linkage Robustness Experiment** — the project's research question: a controlled test of how two record-linkage strategies hold up under increasing data-entry noise
+9. **Parking Budget Analysis** — estimates the savings available by not issuing campus parking passes to out-of-state members, with a state-level breakdown, a live sensitivity analysis over the two driving assumptions, and a worked case study (problem / constraints / decisions / limitations)
+
+## Architecture
+
+```
+┌─────────────────────┐     ┌──────────────────────┐     ┌────────────────────┐
+│   data/raw/*.xlsx    │     │  src/data_cleaning.py │     │  src/features.py   │
+│  3 inconsistent      │ ──▶ │  fuzzy name+zip key   │ ──▶ │  tenure, recency,  │
+│  synthetic sheets    │     │  linkage + repair     │     │  engagement, target│
+└─────────────────────┘     └──────────────────────┘     └──────────┬─────────┘
+                                                                      │
+                     ┌────────────────────────────────────────────────┼─────────────────────────────┐
+                     ▼                                                ▼                             ▼
+          ┌─────────────────────┐                         ┌─────────────────────┐      ┌─────────────────────┐
+          │  src/modeling.py    │                         │ src/segmentation.py │      │ src/optimization.py │
+          │  LR/RF/XGB + SHAP + │                         │  K-Means + PCA      │      │  knapsack outreach + │
+          │  bootstrap CIs      │                         │  (silhouette k)     │      │  sensitivity analysis│
+          └──────────┬──────────┘                         └──────────┬──────────┘      └──────────┬──────────┘
+                     │                                                │                            │
+                     └────────────────────────┬───────────────────────┴──────────────┬─────────────┘
+                                               ▼                                      ▼
+                                 ┌─────────────────────────┐         ┌─────────────────────────────┐
+                                 │  src/linkage_robustness  │         │  src/parking_analysis.py     │
+                                 │  .py — controlled noise  │         │  — assumption-driven budget  │
+                                 │  experiment (research Q)  │         │  impact estimate + sensitivity│
+                                 └────────────┬─────────────┘         └───────────────┬─────────────┘
+                                              └──────────────────┬───────────────────┘
+                                                                  ▼
+                                                   ┌───────────────────────────┐
+                                                   │  app.py + pages/*.py      │
+                                                   │  9-page Streamlit app     │
+                                                   │  (deployed publicly)      │
+                                                   └───────────────────────────┘
+```
+
+`src/pipeline.py` runs every stage above, in order, in one command.
 
 ## Quickstart
 
@@ -109,6 +146,7 @@ pytest tests/ -v
 │   ├── segmentation.py         # K-Means member segmentation
 │   ├── optimization.py         # Budget-constrained outreach optimizer
 │   ├── linkage_robustness.py   # Research question: linkage strategy robustness experiment
+│   ├── parking_analysis.py     # Budget-impact estimate + sensitivity analysis
 │   └── pipeline.py             # Orchestrates the full pipeline end to end
 ├── tests/                      # pytest unit tests
 ├── data/
@@ -128,6 +166,43 @@ pytest tests/ -v
   red flag for data leakage.
 - The outreach "call lift" curve is an assumed behavioral model for
   demonstration purposes, not fit from a real randomized experiment.
+
+## Case study: Emeritus College Membership Analytics
+
+**Problem.** Years of fragmented membership and dues spreadsheets meant the
+association had no reliable, unified view of who was an active member, let
+alone whether a cost like campus parking passes was being allocated to
+people unlikely to use it.
+
+**Constraints.** The underlying data is sensitive (names, addresses,
+payment records), and the people who needed the answer — membership-office
+staff — are not technical users. Any tool built on it had to protect
+member privacy by design and be usable without a data background.
+
+**Decisions.**
+- Two-tier record linkage (exact-ID match first, normalized name+zip match
+  second) to reconcile three separately maintained spreadsheets into one
+  clean member record, instead of requiring a shared ID that didn't exist.
+- This public version is rebuilt entirely on **synthetic data** — generated
+  to preserve the real statistical structure (file layout, data-quality
+  issues, cross-file identity overlap) without exposing any real member's
+  information — so the method and code can be shared publicly.
+- Dollar estimates (the parking-budget analysis) are presented as a
+  **range under stated assumptions**, not a single number, because the
+  source data can't actually confirm usage — an honest, audit-first
+  recommendation is more credible than false precision.
+- A model-interpretability layer (SHAP) and bootstrap confidence intervals
+  on model comparison, so performance claims are never overstated.
+
+**Results.** _Replace this paragraph with the specific numbers already on
+your résumé from the real engagement — members reconciled, discrepancies
+found, dollars identified, hours saved. This synthetic rebuild intentionally
+doesn't invent those numbers._
+
+**What I'd do differently.** Capture actual benefit-usage data (e.g. parking
+pass swipes) at intake, so budget-impact analyses like the parking one are
+measured rather than estimated — the single biggest limitation called out
+on the **About & Methodology** and **Parking Budget Analysis** pages.
 
 ## License
 

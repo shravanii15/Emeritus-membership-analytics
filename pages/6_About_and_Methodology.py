@@ -28,7 +28,7 @@ with tab2:
     st.markdown("Built to demonstrate the breadth of skills a Master's-level Data Science role in the US typically expects:")
     st.table({
         "Skill area": ["Data engineering", "EDA & storytelling", "Supervised ML", "Model interpretability",
-                       "Unsupervised ML", "Decision science / OR", "Research methodology",
+                       "Unsupervised ML", "Decision science / OR", "Budget-impact analysis", "Research methodology",
                        "Software engineering", "Deployment & communication"],
         "Where it shows up": [
             "Multi-source record linkage with fuzzy matching, handling inconsistent keys/formats",
@@ -37,8 +37,9 @@ with tab2:
             "SHAP global + local explanations, with readable feature labels",
             "K-Means segmentation with silhouette-based k selection, PCA visualization",
             "Budget-constrained 0/1 knapsack optimization + a sensitivity analysis over its core assumption",
+            "Out-of-state parking-pass savings estimate shown as a range across stated assumptions, with a worked case study",
             "A controlled experiment on linkage-strategy robustness — a real, falsifiable finding",
-            "Modular src/ package, pytest suite (39 tests), CI via GitHub Actions, reproducible pipeline",
+            "Modular src/ package, pytest suite (44 tests), CI via GitHub Actions, reproducible pipeline",
             "Multi-page interactive Streamlit dashboard, deployed publicly",
         ],
     })
@@ -65,6 +66,10 @@ with tab4:
   that page rather than presented as fact.
 - Discipline and location categories are drawn from a realistic but simplified reference list, not
   the full real set of academic departments.
+- The **Parking Budget Analysis** page's dollar figure rests on two unmeasured assumptions
+  (per-pass cost and the share of out-of-state members who actually hold a pass) — it's shown as
+  a sensitivity range, and its real recommendation is "audit this before acting," not the dollar
+  figure itself.
 - The one claim in this project that *is* a real, reproducible finding independent of the
   synthetic data — see the **Linkage Robustness Experiment** page.
 """

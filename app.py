@@ -41,8 +41,9 @@ with c2:
     st.page_link("pages/4_Member_Segmentation.py", label="🧩 **Member Segmentation**", help="K-Means clusters for targeted outreach")
 with c3:
     st.page_link("pages/5_Outreach_Budget_Optimizer.py", label="📞 **Outreach Budget Optimizer**", help="Interactive budget-constrained call-list optimizer")
-    st.page_link("pages/7_Linkage_Robustness_Experiment.py", label="🔬 **Linkage Robustness Experiment**", help="The project's research question")
+    st.page_link("pages/8_Parking_Budget_Analysis.py", label="🅿️ **Parking Budget Analysis**", help="Out-of-state parking savings estimate + sensitivity analysis")
 with c4:
+    st.page_link("pages/7_Linkage_Robustness_Experiment.py", label="🔬 **Linkage Robustness Experiment**", help="The project's research question")
     st.page_link("pages/6_About_and_Methodology.py", label="📖 **About & Methodology**", help="Data privacy, skills map, limitations")
 
 read_more(
@@ -60,6 +61,7 @@ genuinely falsifiable research finding (independent of the data being synthetic)
 - 🤖 **Machine learning** — renewal/churn classification with SHAP interpretability, honestly reported with confidence intervals
 - 🧩 **Unsupervised learning** — K-Means member segmentation
 - 📞 **Decision science** — a budget-constrained 0/1 knapsack outreach optimizer, stress-tested with a sensitivity analysis
+- 🅿️ **Budget-impact analysis** — an out-of-state parking-pass savings estimate, framed as a sensitivity range rather than a single confident number
 - 🔬 **Research methodology** — a controlled experiment on record-linkage robustness under data-entry noise
 """,
 )

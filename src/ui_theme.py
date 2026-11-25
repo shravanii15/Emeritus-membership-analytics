@@ -61,6 +61,7 @@ def page_nav():
         ("pages/3_Renewal_Prediction_Model.py", "🤖 Model"),
         ("pages/4_Member_Segmentation.py", "🧩 Segments"),
         ("pages/5_Outreach_Budget_Optimizer.py", "📞 Optimizer"),
+        ("pages/8_Parking_Budget_Analysis.py", "🅿️ Parking"),
         ("pages/7_Linkage_Robustness_Experiment.py", "🔬 Experiment"),
         ("pages/6_About_and_Methodology.py", "📖 About"),
     ]

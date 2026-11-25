@@ -4,7 +4,7 @@
   "lift_peak": 0.42,
   "lift_width": 0.18,
   "lift_max": 0.35,
-  "greedy_expected_renewals_recovered": 64.5172125038116,
-  "optimized_expected_renewals_recovered": 68.43786300546064,
-  "improvement_pct": 6.076906223153097
+  "greedy_expected_renewals_recovered": 64.51721250381158,
+  "optimized_expected_renewals_recovered": 68.43786300546063,
+  "improvement_pct": 6.076906223153122
 }
